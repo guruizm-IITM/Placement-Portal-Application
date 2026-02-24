@@ -38,23 +38,22 @@ The system demonstrates role-based access, CRUD workflows, and backend-driven lo
 ## 📁 Project Structure (planned)
 
 placement_portal/
-│
-├── app.py
-├── models.py
-├── init_db.py
-├── requirements.txt
-│
-├── templates/
-│ ├── base.html
-│ ├── login.html
-│ ├── register.html
-│ ├── admin/
-│ ├── student/
-│ ├── company/
-│
-└── static/
-└── css/
-
+|
+|-- app.py
+|-- models.py
+|-- init_db.py
+|-- requirements.txt
+|
+|-- templates/
+|   |-- base.html
+|   |-- login.html
+|   |-- register.html
+|   |-- admin/
+|   |-- student/
+|   |-- company/
+|
+|-- static/
+|   |-- css/
 
 ## ⚙️ Current Status
 Initial setup phase:
