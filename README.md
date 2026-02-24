@@ -36,3 +36,40 @@ The system demonstrates role-based access, CRUD workflows, and backend-driven lo
 - Track application status
 
 ## 📁 Project Structure (planned)
+
+placement_portal/
+│
+├── app.py
+├── models.py
+├── init_db.py
+├── requirements.txt
+│
+├── templates/
+│ ├── base.html
+│ ├── login.html
+│ ├── register.html
+│ ├── admin/
+│ ├── student/
+│ ├── company/
+│
+└── static/
+└── css/
+
+
+## ⚙️ Current Status
+Initial setup phase:
+- Repository initialization
+- Documentation drafting
+- Architecture planning
+
+## 📌 Next Steps
+- Define database schema
+- Implement authentication
+- Build role dashboards
+- Add application workflow
+
+## 🎓 Academic Note
+This is a coursework project focused on backend logic, system design, and role-based workflows rather than production deployment.
+
+---
+More details and setup instructions will be added as development progresses.
