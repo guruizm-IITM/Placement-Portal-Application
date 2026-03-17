@@ -1,0 +1,12 @@
+
+venv/
+
+__pycache__/
+*.pyc
+
+placement.db
+
+.DS_Store
+Thumbs.db
+
+.env

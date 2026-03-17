@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Placement Portal</title>
+</head>
+<body>
+
+<h2>Placement Portal</h2>
+
+<a href="/">Home</a> |
+<a href="/login">Login</a> |
+<a href="/register">Register</a> |
+<a href="/logout">Logout</a>
+
+<hr>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for msg in messages %}
+      <p>{{ msg }}</p>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+</body>
+</html>
