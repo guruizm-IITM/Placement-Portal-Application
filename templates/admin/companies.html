@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Pending Companies</h2>
+
+{% if companies %}
+    <ul>
+    {% for company in companies %}
+        <li>
+            {{ company.name }} ({{ company.email }})
+            <a href="/admin/approve_company/{{ company.id }}">Approve</a>
+            <a href="/admin/delete_company/{{ company.id }}">Reject</a>
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No pending companies</p>
+{% endif %}
+
+{% endblock %}

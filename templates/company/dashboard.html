@@ -3,4 +3,14 @@
 {% block content %}
 <h2>Company Dashboard</h2>
 <p>Welcome {{ current_user.name }}</p>
+
+<hr>
+
+<h3>Actions</h3>
+
+<a href="/company/create_drive">Create Drive</a>
+<br><br>
+
+<a href="/company/drives">View My Drives</a>
+
 {% endblock %}

@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request, flash
 from config import Config
-from models import db, User
+from models import db, User, Drive, Application
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 
@@ -130,6 +130,154 @@ def logout():
     logout_user()
     flash("Logged out")
     return redirect(url_for("login"))
+
+
+@app.route("/admin/companies")
+@login_required
+def view_companies():
+    if current_user.role != "admin":
+        return "Unauthorized", 403
+
+    companies = User.query.filter_by(role="company", is_approved=False).all()
+
+    return render_template("admin/companies.html", companies=companies)
+
+@app.route("/admin/approve_company/<int:user_id>")
+@login_required
+def approve_company(user_id):
+    if current_user.role != "admin":
+        return "Unauthorized", 403
+
+    company = User.query.get(user_id)
+    company.is_approved = True
+    db.session.commit()
+
+    return redirect(url_for("view_companies"))
+
+
+@app.route("/admin/delete_company/<int:user_id>")
+@login_required
+def delete_company(user_id):
+    if current_user.role != "admin":
+        return "Unauthorized", 403
+
+    company = User.query.get(user_id)
+    db.session.delete(company)
+    db.session.commit()
+
+    return redirect(url_for("view_companies"))
+
+from datetime import datetime
+
+@app.route("/company/create_drive", methods=["GET", "POST"])
+@login_required
+def create_drive():
+    if current_user.role != "company":
+        return "Unauthorized", 403
+
+    if request.method == "POST":
+        title = request.form["title"]
+        description = request.form["description"]
+        date = request.form["date"]
+
+        drive = Drive(
+            title=title,
+            description=description,
+            date=date,
+            company_id=current_user.id,
+            is_approved=False
+        )
+
+        db.session.add(drive)
+        db.session.commit()
+
+        return redirect(url_for("company_dashboard"))
+
+    return render_template("company/create_drive.html")
+
+
+@app.route("/student/drives")
+@login_required
+def view_drives():
+    if current_user.role != "student":
+        return "Unauthorized", 403
+
+    drives = Drive.query.filter_by(is_approved=True).all()
+
+    return render_template("student/drives.html", drives=drives)
+
+@app.route("/student/apply/<int:drive_id>")
+@login_required
+def apply_drive(drive_id):
+    if current_user.role != "student":
+        return "Unauthorized", 403
+
+    existing = Application.query.filter_by(
+        student_id=current_user.id,
+        drive_id=drive_id
+    ).first()
+
+    if existing:
+        return "Already applied"
+
+    application = Application(
+        student_id=current_user.id,
+        drive_id=drive_id,
+        status="applied",
+        applied_at=datetime.utcnow()
+    )
+
+    db.session.add(application)
+    db.session.commit()
+
+    return redirect(url_for("view_drives"))
+
+@app.route("/admin/drives")
+@login_required
+def view_drives_admin():
+    if current_user.role != "admin":
+        return "Unauthorized", 403
+
+    drives = Drive.query.filter_by(is_approved=False).all()
+
+    return render_template("admin/drives.html", drives=drives)
+
+
+@app.route("/admin/approve_drive/<int:drive_id>")
+@login_required
+def approve_drive(drive_id):
+    if current_user.role != "admin":
+        return "Unauthorized", 403
+
+    drive = Drive.query.get(drive_id)
+    drive.is_approved = True
+    db.session.commit()
+
+    return redirect(url_for("view_drives_admin"))
+
+
+@app.route("/company/applicants/<int:drive_id>")
+@login_required
+def view_applicants(drive_id):
+    if current_user.role != "company":
+        return "Unauthorized", 403
+
+    applications = Application.query.filter_by(drive_id=drive_id).all()
+
+    return render_template("company/applicants.html", applications=applications)
+
+
+@app.route("/company/update_status/<int:app_id>/<status>")
+@login_required
+def update_status(app_id, status):
+    if current_user.role != "company":
+        return "Unauthorized", 403
+
+    application = Application.query.get(app_id)
+    application.status = status
+    db.session.commit()
+
+    return redirect(request.referrer)
 
 
 if __name__ == "__main__":

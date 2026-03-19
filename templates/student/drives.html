@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Available Drives</h2>
+
+{% for drive in drives %}
+    <div>
+        <h3>{{ drive.title }}</h3>
+        <p>{{ drive.description }}</p>
+        <p>Date: {{ drive.date }}</p>
+
+        <a href="/student/apply/{{ drive.id }}">Apply</a>
+    </div>
+{% endfor %}
+
+<a href="/student/drives">View Drives</a>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Applicants</h2>
+
+{% for app in applications %}
+    <div>
+        Student ID: {{ app.student_id }}  
+        Status: {{ app.status }}
+
+        <a href="/company/update_status/{{ app.id }}/shortlisted">Shortlist</a>
+        <a href="/company/update_status/{{ app.id }}/selected">Select</a>
+        <a href="/company/update_status/{{ app.id }}/rejected">Reject</a>
+    </div>
+{% endfor %}
+
+{% endblock %}
