@@ -280,5 +280,26 @@ def update_status(app_id, status):
     return redirect(request.referrer)
 
 
+@app.route("/company/drives")
+@login_required
+def company_drives():
+    if current_user.role != "company":
+        return "Unauthorized", 403
+
+    drives = Drive.query.filter_by(company_id=current_user.id).all()
+
+    return render_template("company/drives.html", drives=drives)
+
+@app.route("/student/applications")
+@login_required
+def student_applications():
+    if current_user.role != "student":
+        return "Unauthorized", 403
+
+    applications = Application.query.filter_by(student_id=current_user.id).all()
+
+    return render_template("student/applications.html", applications=applications)
+
+
 if __name__ == "__main__":
     app.run(debug=True)
