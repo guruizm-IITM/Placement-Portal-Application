@@ -100,7 +100,18 @@ def admin_dashboard():
     if current_user.role != "admin":
         return "Unauthorized", 403
 
-    return render_template("admin/dashboard.html")
+    total_students = User.query.filter_by(role="student").count()
+    total_companies = User.query.filter_by(role="company").count()
+    total_drives = Drive.query.count()
+    total_applications = Application.query.count()
+
+    return render_template(
+        "admin/dashboard.html",
+        total_students=total_students,
+        total_companies=total_companies,
+        total_drives=total_drives,
+        total_applications=total_applications
+    )
 
 
 #STUDENT DASHBOARD
@@ -120,7 +131,22 @@ def company_dashboard():
     if current_user.role != "company":
         return "Unauthorized", 403
 
-    return render_template("company/dashboard.html")
+    drives = Drive.query.filter_by(company_id=current_user.id).all()
+
+    drive_data = []
+
+    for drive in drives:
+        applicant_count = Application.query.filter_by(drive_id=drive.id).count()
+
+        drive_data.append({
+            "drive": drive,
+            "count": applicant_count
+        })
+
+    return render_template(
+        "company/dashboard.html",
+        drive_data=drive_data
+    )
 
 
 #LOGOUT

@@ -6,7 +6,24 @@
 
 <hr>
 
-<h3>Actions</h3>
+<h3>Your Drives</h3>
+
+{% if drive_data %}
+    {% for item in drive_data %}
+        <div>
+            <h4>{{ item.drive.title }}</h4>
+            <p>Date: {{ item.drive.date }}</p>
+            <p>Applicants: {{ item.count }}</p>
+
+            <a href="/company/applicants/{{ item.drive.id }}">View Applicants</a>
+            <hr>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>No drives created yet</p>
+{% endif %}
+
+<hr>
 
 <a href="/company/create_drive">Create Drive</a>
 <br><br>
