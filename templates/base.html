@@ -8,9 +8,13 @@
 <h2>Placement Portal</h2>
 
 <a href="/">Home</a> |
-<a href="/login">Login</a> |
-<a href="/register">Register</a> |
-<a href="/logout">Logout</a>
+
+{% if current_user.is_authenticated %}
+    <a href="/logout">Logout</a>
+{% else %}
+    <a href="/login">Login</a> |
+    <a href="/register">Register</a>
+{% endif %}
 
 <hr>
 

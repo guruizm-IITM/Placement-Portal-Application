@@ -21,7 +21,9 @@ def load_user(user_id):
 
 @app.route("/")
 def home():
-    return render_template("base.html")
+    if current_user.is_authenticated:
+        return redirect(url_for("dashboard"))
+    return render_template("home.html")
 
 
 #REGISTER
@@ -325,6 +327,16 @@ def student_applications():
     applications = Application.query.filter_by(student_id=current_user.id).all()
 
     return render_template("student/applications.html", applications=applications)
+
+@app.route("/admin/applications")
+@login_required
+def admin_applications():
+    if current_user.role != "admin":
+        return "Unauthorized", 403
+
+    applications = Application.query.all()
+
+    return render_template("admin/applications.html", applications=applications)
 
 
 if __name__ == "__main__":

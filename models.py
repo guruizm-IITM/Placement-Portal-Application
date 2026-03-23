@@ -37,3 +37,6 @@ class Application(db.Model):
 
     status = db.Column(db.String(20), default="applied")
     applied_at = db.Column(db.DateTime)
+
+    student = db.relationship('User', foreign_keys=[student_id])
+    drive = db.relationship('Drive', foreign_keys=[drive_id])
