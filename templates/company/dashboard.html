@@ -8,17 +8,17 @@
 
 <h3>Your Drives</h3>
 
-{% if drive_data %}
-    {% for item in drive_data %}
-        <div>
-            <h4>{{ item.drive.title }}</h4>
-            <p>Date: {{ item.drive.date }}</p>
-            <p>Applicants: {{ item.count }}</p>
+{% for item in drive_data %}
+<div class="card mb-3 p-3">
+    <h5>{{ item.drive.title }}</h5>
+    <p>Date: {{ item.drive.date }}</p>
+    <p>Applicants: {{ item.count }}</p>
 
-            <a href="/company/applicants/{{ item.drive.id }}">View Applicants</a>
-            <hr>
-        </div>
-    {% endfor %}
+    <a href="/company/applicants/{{ item.drive.id }}" class="btn btn-primary btn-sm">
+        View Applicants
+    </a>
+</div>
+{% endfor %}
 {% else %}
     <p>No drives created yet</p>
 {% endif %}

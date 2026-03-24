@@ -8,12 +8,35 @@
 
 <h3>System Stats</h3>
 
-<ul>
-    <li>Total Students: {{ total_students }}</li>
-    <li>Total Companies: {{ total_companies }}</li>
-    <li>Total Drives: {{ total_drives }}</li>
-    <li>Total Applications: {{ total_applications }}</li>
-</ul>
+<div class="row">
+    <div class="col-md-3">
+        <div class="card p-3 mb-3">
+            <h5>Students</h5>
+            <p>{{ total_students }}</p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card p-3 mb-3">
+            <h5>Companies</h5>
+            <p>{{ total_companies }}</p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card p-3 mb-3">
+            <h5>Drives</h5>
+            <p>{{ total_drives }}</p>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card p-3 mb-3">
+            <h5>Applications</h5>
+            <p>{{ total_applications }}</p>
+        </div>
+    </div>
+</div>
 
 <hr>
 
