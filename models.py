@@ -7,6 +7,8 @@ class Admin(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
+    def get_role(self):
+        return "admin"
 
 class Company(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -18,6 +20,8 @@ class Company(UserMixin, db.Model):
     approval_status = db.Column(db.String(50), default='Pending')  
 
     placement_drives = db.relationship('PlacementDrive', backref='company', lazy=True)
+    def get_role(self):
+        return "company"
 
 class Student(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -31,6 +35,8 @@ class Student(UserMixin, db.Model):
     is_blacklisted = db.Column(db.Boolean, default=False)
 
     applications = db.relationship('Application', backref='student', lazy=True)
+    def get_role(self):
+        return "student"
 
 class PlacementDrive(db.Model):
     id = db.Column(db.Integer, primary_key=True)
