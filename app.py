@@ -1,6 +1,6 @@
 from flask import Flask, Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from models import db, Student, Company, Admin
+from models import db, Student, Company, Admin, PlacementDrive, Application
 from config import Config
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -122,7 +122,18 @@ admin = Blueprint('admin', __name__)
 @login_required
 @role_required('admin')
 def dashboard():
-    return "Admin Dashboard"
+    total_students = Student.query.count()
+    total_companies = Company.query.count()
+    total_drives = PlacementDrive.query.count()
+    total_applications = Application.query.count()
+
+    return render_template(
+        'admin/dashboard.html',
+        students=total_students,
+        companies=total_companies,
+        drives=total_drives,
+        applications=total_applications
+    )
 
 with app.app_context():
     db.create_all()
@@ -134,6 +145,198 @@ with app.app_context():
         )
         db.session.add(admin)
         db.session.commit()
+
+@admin.route('/admin/company/<int:id>/approve')
+@login_required
+@role_required('admin')
+def approve_company(id):
+    company = Company.query.get_or_404(id)
+    company.approval_status = 'Approved'
+    db.session.commit()
+    return redirect(url_for('admin.view_companies'))
+
+@admin.route('/admin/company/<int:id>/reject')
+@login_required
+@role_required('admin')
+def reject_company(id):
+    company = Company.query.get_or_404(id)
+    company.approval_status = 'Rejected'
+    db.session.commit()
+    return redirect(url_for('admin.view_companies'))
+
+@admin.route('/admin/companies')
+@login_required
+@role_required('admin')
+def view_companies():
+    companies = Company.query.all()
+    return render_template('admin/companies.html', companies=companies)
+
+@admin.route('/admin/students')
+@login_required
+@role_required('admin')
+def view_students():
+    students = Student.query.all()
+    return render_template('admin/students.html', students=students)
+
+@admin.route('/admin/drive/<int:id>/approve')
+@login_required
+@role_required('admin')
+def approve_drive(id):
+    drive = PlacementDrive.query.get_or_404(id)
+    drive.status = 'Approved'
+    db.session.commit()
+    return redirect(url_for('admin.view_drives'))
+
+@admin.route('/admin/drive/<int:id>/reject')
+@login_required
+@role_required('admin')
+def reject_drive(id):
+    drive = PlacementDrive.query.get_or_404(id)
+    drive.status = 'Rejected'
+    db.session.commit()
+    return redirect(url_for('admin.view_drives'))
+
+@admin.route('/admin/drives')
+@login_required
+@role_required('admin')
+def view_drives():
+    drives = PlacementDrive.query.all()
+    return render_template('admin/drives.html', drives=drives)
+
+@admin.route('/admin/applications')
+@login_required
+@role_required('admin')
+def view_applications():
+    applications = Application.query.all()
+    return render_template('admin/applications.html', applications=applications)
+
+@admin.route('/admin/search/students')
+@login_required
+@role_required('admin')
+def search_students():
+    query = request.args.get('q')
+    students = Student.query.filter(
+        Student.name.contains(query) |
+        Student.email.contains(query)
+    ).all()
+
+    return render_template('admin/students.html', students=students)
+
+@admin.route('/admin/search/companies')
+@login_required
+@role_required('admin')
+def search_companies():
+    query = request.args.get('q')
+    companies = Company.query.filter(
+        Company.name.contains(query)
+    ).all()
+
+    return render_template('admin/companies.html', companies=companies)
+
+@admin.route('/admin/student/<int:id>/blacklist')
+@login_required
+@role_required('admin')
+def blacklist_student(id):
+    student = Student.query.get_or_404(id)
+    student.is_blacklisted = True
+    db.session.commit()
+    return redirect(url_for('admin.view_students'))
+
+@admin.route('/admin/company/<int:id>/blacklist')
+@login_required
+@role_required('admin')
+def blacklist_company(id):
+    company = Company.query.get_or_404(id)
+    company.approval_status = 'Blacklisted'
+    db.session.commit()
+    return redirect(url_for('admin.view_companies'))
+
+
+company = Blueprint('company', __name__)
+
+@company.route('/company/dashboard')
+@login_required
+@role_required('company')
+def dashboard():
+
+    if current_user.approval_status != 'Approved':
+        return "Access Denied. Await admin approval."
+
+    drives = PlacementDrive.query.filter_by(company_id=current_user.id).all()
+
+    return render_template('company/dashboard.html', drives=drives)
+
+@company.route('/company/drive/create', methods=['GET', 'POST'])
+@login_required
+@role_required('company')
+def create_drive():
+
+    if current_user.approval_status != 'Approved':
+        return "Not authorized"
+
+    if request.method == 'POST':
+        drive = PlacementDrive(
+            job_title=request.form['title'],
+            job_description=request.form['description'],
+            eligibility=request.form['eligibility'],
+            application_deadline=request.form['deadline'],
+            company_id=current_user.id
+        )
+
+        db.session.add(drive)
+        db.session.commit()
+
+        return redirect(url_for('company.dashboard'))
+
+    return render_template('company/create_drive.html')
+
+
+@company.route('/company/drive/<int:id>/close')
+@login_required
+@role_required('company')
+def close_drive(id):
+    drive = PlacementDrive.query.get_or_404(id)
+
+    if drive.company_id != current_user.id:
+        return "Unauthorized"
+
+    drive.status = 'Closed'
+    db.session.commit()
+
+    return redirect(url_for('company.dashboard'))
+
+
+@company.route('/company/drive/<int:id>/applications')
+@login_required
+@role_required('company')
+def view_applications(id):
+    drive = PlacementDrive.query.get_or_404(id)
+
+    if drive.company_id != current_user.id:
+        return "Unauthorized"
+
+    applications = Application.query.filter_by(drive_id=id).all()
+
+    return render_template(
+        'company/applications.html',
+        applications=applications,
+        drive=drive
+    )
+
+
+@company.route('/company/application/<int:id>/update/<status>')
+@login_required
+@role_required('company')
+def update_application_status(id, status):
+    application = Application.query.get_or_404(id)
+
+    if application.drive.company_id != current_user.id:
+        return "Unauthorized"
+
+    application.status = status  # Shortlisted / Selected / Rejected
+    db.session.commit()
+
+    return redirect(url_for('company.view_applications', id=application.drive_id))
 
 
 if __name__ == "__main__":
