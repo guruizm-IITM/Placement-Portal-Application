@@ -54,6 +54,7 @@ Placement_Portal_App/
 ├── templates/
 ├── static/
 
+```
 
 ## ⚙️ Current Status
 Initial setup phase:
