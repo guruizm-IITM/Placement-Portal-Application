@@ -1,6 +1,6 @@
 from flask import Flask, Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
-from models import db, Student, Company, Admin, PlacementDrive, Application
+from models import db, Student, Company, Admin, PlacementDrive, Application, Placement
 from config import Config
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -251,6 +251,20 @@ def blacklist_company(id):
     db.session.commit()
     return redirect(url_for('admin.view_companies'))
 
+@admin.route('/admin/chart-data')
+@login_required
+@role_required('admin')
+def admin_chart_data():
+
+    total_drives = PlacementDrive.query.count()
+    total_applications = Application.query.count()
+    total_placements = Placement.query.count()
+
+    return {
+        "labels": ["Drives", "Applications", "Placements"],
+        "values": [total_drives, total_applications, total_placements]
+    }
+
 
 company = Blueprint('company', __name__)
 
@@ -356,6 +370,26 @@ def update_application_status(id, status):
 
     if status not in VALID_STATUSES:
         return "Invalid status"
+    
+
+@company.route('/company/chart-data')
+@login_required
+@role_required('company')
+def company_chart_data():
+
+    drives = PlacementDrive.query.filter_by(company_id=current_user.id).all()
+
+    labels = []
+    values = []
+
+    for drive in drives:
+        labels.append(drive.job_title)
+        values.append(len(drive.applications))
+
+    return {
+        "labels": labels,
+        "values": values
+    }
 
 student = Blueprint('student', __name__)
 
@@ -447,6 +481,23 @@ def profile():
         return redirect(url_for('student.dashboard'))
 
     return render_template('student/profile.html')
+
+@student.route('/student/chart-data')
+@login_required
+@role_required('student')
+def student_chart_data():
+
+    applications = Application.query.filter_by(student_id=current_user.id).all()
+
+    status_count = {}
+
+    for app in applications:
+        status_count[app.status] = status_count.get(app.status, 0) + 1
+
+    return {
+        "labels": list(status_count.keys()),
+        "values": list(status_count.values())
+    }
 
 
 if __name__ == "__main__":

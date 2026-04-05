@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Company Dashboard</h2>
+
+<a href="/company/drive/create">Create Drive</a>
+
+<table>
+<tr><th>Job</th><th>Status</th><th>Applications</th></tr>
+
+{% for drive in drives %}
+<tr>
+    <td>{{ drive.job_title }}</td>
+    <td>{{ drive.status }}</td>
+    <td>
+        <a href="/company/drive/{{ drive.id }}/applications">
+            View ({{ drive.applications|length }})
+        </a>
+    </td>
+</tr>
+{% endfor %}
+</table>
+
+<h3>Applications per Job</h3>
+<canvas id="companyChart"></canvas>
+
+<script>
+fetch('/company/chart-data')
+.then(res => res.json())
+.then(data => {
+    new Chart(document.getElementById('companyChart'), {
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: 'Applications',
+                data: data.values
+            }]
+        }
+    });
+});
+</script>
+
+{% endblock %}

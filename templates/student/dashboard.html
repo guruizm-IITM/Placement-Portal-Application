@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Student Dashboard</h2>
+
+<h3>Available Jobs</h3>
+<table>
+<tr><th>Title</th><th>Action</th></tr>
+
+{% for drive in drives %}
+<tr>
+    <td>{{ drive.job_title }}</td>
+    <td><a href="/student/apply/{{ drive.id }}">Apply</a></td>
+</tr>
+{% endfor %}
+</table>
+
+<h3>Your Applications</h3>
+<table>
+<tr><th>Job</th><th>Status</th></tr>
+
+{% for app in applications %}
+<tr>
+    <td>{{ app.drive.job_title }}</td>
+    <td>{{ app.status }}</td>
+</tr>
+{% endfor %}
+</table>
+
+<h3>Application Status</h3>
+<canvas id="studentChart"></canvas>
+
+<script>
+fetch('/student/chart-data')
+.then(res => res.json())
+.then(data => {
+    new Chart(document.getElementById('studentChart'), {
+        type: 'pie',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                data: data.values
+            }]
+        }
+    });
+});
+</script>
+
+{% endblock %}

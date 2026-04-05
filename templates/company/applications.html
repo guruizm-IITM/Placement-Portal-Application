@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Applications for {{ drive.job_title }}</h2>
+
+<table>
+<tr>
+    <th>Student</th>
+    <th>Status</th>
+    <th>Actions</th>
+</tr>
+
+{% for app in applications %}
+<tr>
+    <td>{{ app.student.name }}</td>
+    <td>{{ app.status }}</td>
+    <td>
+        <a href="/company/application/{{ app.id }}/update/Shortlisted">Shortlist</a>
+        <a href="/company/application/{{ app.id }}/update/Rejected">Reject</a>
+    </td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}

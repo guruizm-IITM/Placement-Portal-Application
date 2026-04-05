@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Admin Dashboard</h2>
+
+<ul>
+    <li>Total Students: {{ students }}</li>
+    <li>Total Companies: {{ companies }}</li>
+    <li>Total Drives: {{ drives }}</li>
+    <li>Total Applications: {{ applications }}</li>
+</ul>
+
+<a href="/admin/companies">Manage Companies</a>
+<a href="/admin/students">Manage Students</a>
+<a href="/admin/drives">Manage Drives</a>
+
+<h3>System Overview</h3>
+<canvas id="adminChart"></canvas>
+
+<script>
+fetch('/admin/chart-data')
+.then(res => res.json())
+.then(data => {
+    new Chart(document.getElementById('adminChart'), {
+        type: 'bar',
+        data: {
+            labels: data.labels,
+            datasets: [{
+                label: 'Admin Stats',
+                data: data.values
+            }]
+        }
+    });
+});
+</script>
+
+{% endblock %}
