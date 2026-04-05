@@ -324,19 +324,38 @@ def view_applications(id):
     )
 
 
+VALID_STATUSES = {
+    "Applied",
+    "Shortlisted",
+    "Interview",
+    "Selected",
+    "Rejected",
+    "Placed"
+}
+
+STATUS_TRANSITIONS = {
+    "Applied": ["Shortlisted", "Rejected"],
+    "Shortlisted": ["Interview", "Rejected"],
+    "Interview": ["Selected", "Rejected"],
+    "Selected": ["Placed"],
+    "Placed": [],
+    "Rejected": []
+}
+
 @company.route('/company/application/<int:id>/update/<status>')
 @login_required
 @role_required('company')
 def update_application_status(id, status):
+
     application = Application.query.get_or_404(id)
 
     if application.drive.company_id != current_user.id:
         return "Unauthorized"
 
-    application.status = status  # Shortlisted / Selected / Rejected
-    db.session.commit()
+    current_status = application.status
 
-    return redirect(url_for('company.view_applications', id=application.drive_id))
+    if status not in VALID_STATUSES:
+        return "Invalid status"
 
 student = Blueprint('student', __name__)
 
