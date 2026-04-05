@@ -338,6 +338,97 @@ def update_application_status(id, status):
 
     return redirect(url_for('company.view_applications', id=application.drive_id))
 
+student = Blueprint('student', __name__)
+
+@student.route('/student/dashboard')
+@login_required
+@role_required('student')
+def dashboard():
+
+    drives = PlacementDrive.query.filter_by(status='Approved').all()
+
+    applications = Application.query.filter_by(student_id=current_user.id).all()
+
+    return render_template(
+        'student/dashboard.html',
+        drives=drives,
+        applications=applications
+    )
+
+
+@student.route('/student/search')
+@login_required
+@role_required('student')
+def search_drives():
+    query = request.args.get('q')
+
+    drives = PlacementDrive.query.filter(
+        PlacementDrive.status == 'Approved',
+        PlacementDrive.job_title.contains(query)
+    ).all()
+
+    return render_template('student/dashboard.html', drives=drives)
+
+
+@student.route('/student/apply/<int:drive_id>')
+@login_required
+@role_required('student')
+def apply_job(drive_id):
+
+    # Prevent blacklisted students
+    if current_user.is_blacklisted:
+        return "You are not allowed to apply"
+
+    application = Application(
+        student_id=current_user.id,
+        drive_id=drive_id
+    )
+
+    try:
+        db.session.add(application)
+        db.session.commit()
+    except:
+        return "Already applied"
+
+    return redirect(url_for('student.dashboard'))
+
+
+@student.route('/student/apply/<int:drive_id>')
+@login_required
+@role_required('student')
+def apply_job(drive_id):
+
+    # Prevent blacklisted students
+    if current_user.is_blacklisted:
+        return "You are not allowed to apply"
+
+    application = Application(
+        student_id=current_user.id,
+        drive_id=drive_id
+    )
+
+    try:
+        db.session.add(application)
+        db.session.commit()
+    except:
+        return "Already applied"
+
+    return redirect(url_for('student.dashboard'))
+
+@student.route('/student/profile', methods=['GET', 'POST'])
+@login_required
+@role_required('student')
+def profile():
+
+    if request.method == 'POST':
+        current_user.name = request.form['name']
+        current_user.skills = request.form['skills']
+
+        db.session.commit()
+        return redirect(url_for('student.dashboard'))
+
+    return render_template('student/profile.html')
+
 
 if __name__ == "__main__":
     app.run(debug=True)
