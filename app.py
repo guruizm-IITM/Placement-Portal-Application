@@ -4,7 +4,8 @@ from models import db, Student, Company, Admin, PlacementDrive, Application, Pla
 from config import Config
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
-from utils import role_required
+from datetime import datetime
+from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -17,15 +18,25 @@ login_manager.login_view = "auth.login"
 
 @login_manager.user_loader
 def load_user(user_id):
-    return (
-        Admin.query.get(int(user_id)) or
-        Company.query.get(int(user_id)) or
-        Student.query.get(int(user_id))
-    )
 
-with app.app_context():
-    db.create_all()
+    if '-' not in user_id:
+        return None   # prevents crash
 
+    role, id = user_id.split('-')
+    id = int(id)
+
+    if role == 'admin':
+        return Admin.query.get(id)
+    elif role == 'company':
+        return Company.query.get(id)
+    elif role == 'student':
+        return Student.query.get(id)
+
+    return None
+
+@app.route('/')
+def home():
+    return redirect(url_for('auth.login'))
 
 auth = Blueprint('auth', __name__)
 
@@ -37,11 +48,15 @@ def register_student():
             email=request.form['email'],
             password=generate_password_hash(request.form['password'])
         )
-        db.session.add(student)
-        db.session.commit()
-        flash("Student registered successfully")
-        return redirect(url_for('auth.login'))
-    return render_template('register_student.html')
+        try:
+            db.session.add(student)
+            db.session.commit()
+            flash("Student registered successfully")
+        except IntegrityError:
+            db.session.rollback()
+            flash("Email already registered. Please login.")
+            return redirect(url_for('auth.login'))
+    return render_template('auth/register_student.html')
 
 
 
@@ -50,16 +65,21 @@ def register_company():
     if request.method == 'POST':
         company = Company(
             name=request.form['name'],
+            email=request.form['email'],
             hr_contact=request.form['hr_contact'],
             website=request.form['website'],
             password=generate_password_hash(request.form['password']),
             approval_status='Pending'
         )
-        db.session.add(company)
-        db.session.commit()
-        flash("Company registered. Wait for admin approval.")
-        return redirect(url_for('auth.login'))
-    return render_template('register_company.html')
+        try:
+            db.session.add(company)
+            db.session.commit()
+            flash("Company registered. Wait for approval.")
+        except IntegrityError:
+            db.session.rollback()
+            flash("Company already registered.")
+            return redirect(url_for('auth.login'))
+    return render_template('auth/register_company.html')
 
 
 @auth.route('/login', methods=['GET', 'POST'])
@@ -71,7 +91,7 @@ def login():
         user = (
             Admin.query.filter_by(username=email_or_username).first() or
             Student.query.filter_by(email=email_or_username).first() or
-            Company.query.filter_by(name=email_or_username).first()
+            Company.query.filter_by(email=email_or_username).first()
         )
 
         if user and check_password_hash(user.password, password):
@@ -87,15 +107,15 @@ def login():
             role = user.get_role()
 
             if role == "admin":
-                return redirect(url_for('admin.dashboard'))
+                return redirect(url_for('admin.admin_dashboard'))
             elif role == "company":
-                return redirect(url_for('company.dashboard'))
+                return redirect(url_for('company.company_dashboard'))
             else:
-                return redirect(url_for('student.dashboard'))
+                return redirect(url_for('student.student_dashboard'))
 
         flash("Invalid credentials")
 
-    return render_template('login.html')
+    return render_template('auth/login.html')
 
 
 @auth.route('/logout')
@@ -121,7 +141,7 @@ admin = Blueprint('admin', __name__)
 @admin.route('/admin/dashboard')
 @login_required
 @role_required('admin')
-def dashboard():
+def admin_dashboard():
     total_students = Student.query.count()
     total_companies = Company.query.count()
     total_drives = PlacementDrive.query.count()
@@ -139,11 +159,11 @@ with app.app_context():
     db.create_all()
 
     if not Admin.query.first():
-        admin = Admin(
+        admin_user = Admin(
             username="admin",
             password=generate_password_hash("admin123")
         )
-        db.session.add(admin)
+        db.session.add(admin_user)
         db.session.commit()
 
 @admin.route('/admin/company/<int:id>/approve')
@@ -271,7 +291,7 @@ company = Blueprint('company', __name__)
 @company.route('/company/dashboard')
 @login_required
 @role_required('company')
-def dashboard():
+def company_dashboard():
 
     if current_user.approval_status != 'Approved':
         return "Access Denied. Await admin approval."
@@ -293,7 +313,7 @@ def create_drive():
             job_title=request.form['title'],
             job_description=request.form['description'],
             eligibility=request.form['eligibility'],
-            application_deadline=request.form['deadline'],
+            application_deadline=datetime.strptime(request.form['deadline'], "%Y-%m-%d"),
             company_id=current_user.id
         )
 
@@ -370,6 +390,14 @@ def update_application_status(id, status):
 
     if status not in VALID_STATUSES:
         return "Invalid status"
+
+    if status not in STATUS_TRANSITIONS[current_status]:
+        return "Invalid transition"
+
+    application.status = status
+    db.session.commit()
+
+    return redirect(url_for('company.view_applications', id=application.drive_id))
     
 
 @company.route('/company/chart-data')
@@ -396,7 +424,7 @@ student = Blueprint('student', __name__)
 @student.route('/student/dashboard')
 @login_required
 @role_required('student')
-def dashboard():
+def student_dashboard():
 
     drives = PlacementDrive.query.filter_by(status='Approved').all()
 
@@ -440,33 +468,12 @@ def apply_job(drive_id):
     try:
         db.session.add(application)
         db.session.commit()
-    except:
+    except IntegrityError:
+        db.session.rollback()
         return "Already applied"
 
     return redirect(url_for('student.dashboard'))
 
-
-@student.route('/student/apply/<int:drive_id>')
-@login_required
-@role_required('student')
-def apply_job(drive_id):
-
-    # Prevent blacklisted students
-    if current_user.is_blacklisted:
-        return "You are not allowed to apply"
-
-    application = Application(
-        student_id=current_user.id,
-        drive_id=drive_id
-    )
-
-    try:
-        db.session.add(application)
-        db.session.commit()
-    except:
-        return "Already applied"
-
-    return redirect(url_for('student.dashboard'))
 
 @student.route('/student/profile', methods=['GET', 'POST'])
 @login_required
@@ -499,6 +506,10 @@ def student_chart_data():
         "values": list(status_count.values())
     }
 
+app.register_blueprint(auth)
+app.register_blueprint(admin)
+app.register_blueprint(company)
+app.register_blueprint(student)
 
 if __name__ == "__main__":
     app.run(debug=True)

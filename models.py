@@ -9,6 +9,8 @@ class Admin(UserMixin, db.Model):
     password = db.Column(db.String(200), nullable=False)
     def get_role(self):
         return "admin"
+    def get_id(self):
+        return f"admin-{self.id}"
 
 class Company(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -16,12 +18,15 @@ class Company(UserMixin, db.Model):
     hr_contact = db.Column(db.String(150))
     website = db.Column(db.String(200))
     password = db.Column(db.String(200), nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=False)
 
     approval_status = db.Column(db.String(50), default='Pending')  
 
     placement_drives = db.relationship('PlacementDrive', backref='company', lazy=True)
     def get_role(self):
         return "company"
+    def get_id(self):
+        return f"company-{self.id}"
 
 class Student(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -37,6 +42,8 @@ class Student(UserMixin, db.Model):
     applications = db.relationship('Application', backref='student', lazy=True)
     def get_role(self):
         return "student"
+    def get_id(self):
+        return f"student-{self.id}"
 
 class PlacementDrive(db.Model):
     id = db.Column(db.Integer, primary_key=True)
