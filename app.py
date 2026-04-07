@@ -255,10 +255,14 @@ def view_applications():
 @role_required('admin')
 def search_students():
     query = request.args.get('q')
+
+    if not query:
+        return redirect(url_for('admin.view_students'))
+
     students = Student.query.filter(
         (Student.name.contains(query)) |
         (Student.email.contains(query)) |
-        (Student.id == query if query.isdigit() else False)
+        (Student.id == int(query) if query.isdigit() else False)
     ).all()
 
     return render_template('admin/students.html', students=students)
@@ -268,6 +272,10 @@ def search_students():
 @role_required('admin')
 def search_companies():
     query = request.args.get('q')
+
+    if not query:
+        return redirect(url_for('admin.view_companies'))
+
     companies = Company.query.filter(
         Company.name.contains(query)
     ).all()

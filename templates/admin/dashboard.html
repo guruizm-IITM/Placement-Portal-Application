@@ -10,6 +10,20 @@
     <li>Total Applications: {{ applications }}</li>
 </ul>
 
+<h3>Search Students</h3>
+
+<form method="GET" action="/admin/search/students">
+    <input type="text" name="q" placeholder="Search by name, email or ID" required>
+    <button type="submit">Search</button>
+</form>
+
+<h3>Search Companies</h3>
+
+<form method="GET" action="/admin/search/companies">
+    <input type="text" name="q" placeholder="Search by company name" required>
+    <button type="submit">Search</button>
+</form>
+
 <a href="/admin/companies">Manage Companies</a>
 <a href="/admin/students">Manage Students</a>
 <a href="/admin/drives">Manage Drives</a>
