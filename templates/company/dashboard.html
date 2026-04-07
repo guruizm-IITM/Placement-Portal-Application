@@ -3,10 +3,19 @@
 
 <h2>Company Dashboard</h2>
 
+<h3>Company Info</h3>
+<p>Name: {{ current_user.name }}</p>
+<p>Email: {{ current_user.email }}</p>
+
 <a href="/company/drive/create">Create Drive</a>
 
 <table>
-<tr><th>Job</th><th>Status</th><th>Applications</th></tr>
+<tr>
+    <th>Job</th>
+    <th>Status</th>
+    <th>Applications</th>
+    <th>Actions</th>
+</tr>
 
 {% for drive in drives %}
 <tr>
@@ -16,6 +25,10 @@
         <a href="/company/drive/{{ drive.id }}/applications">
             View ({{ drive.applications|length }})
         </a>
+    </td>
+    <td>
+        <a href="/company/drive/{{ drive.id }}/edit">Edit</a>
+        <a href="/company/drive/{{ drive.id }}/delete">Delete</a>
     </td>
 </tr>
 {% endfor %}

@@ -4,18 +4,26 @@
 <h2>Companies</h2>
 
 <table>
-<tr><th>Name</th><th>Status</th><th>Action</th></tr>
+<tr>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Status</th>
+    <th>Action</th>
+</tr>
 
 {% for company in companies %}
 <tr>
     <td>{{ company.name }}</td>
+    <td>{{ company.email }}</td>
     <td>{{ company.approval_status }}</td>
     <td>
         <a href="/admin/company/{{ company.id }}/approve">Approve</a>
         <a href="/admin/company/{{ company.id }}/reject">Reject</a>
+        <a href="/admin/company/{{ company.id }}/blacklist">Blacklist</a>
     </td>
 </tr>
 {% endfor %}
+
 </table>
 
 {% endblock %}

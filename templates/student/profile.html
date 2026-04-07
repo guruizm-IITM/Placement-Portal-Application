@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Edit Profile</h2>
+
+<form method="POST">
+
+    <label>Name:</label><br>
+    <input type="text" name="name" value="{{ current_user.name }}" required><br><br>
+
+    <label>Skills:</label><br>
+    <textarea name="skills">{{ current_user.skills }}</textarea><br><br>
+
+    <label>Resume Link:</label><br>
+    <input type="text" name="resume" value="{{ current_user.resume }}"><br><br>
+
+    <button type="submit">Update Profile</button>
+
+</form>
+
+{% endblock %}

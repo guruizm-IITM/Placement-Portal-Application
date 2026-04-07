@@ -36,6 +36,17 @@ def load_user(user_id):
 
 @app.route('/')
 def home():
+
+    if current_user.is_authenticated:
+        role = current_user.get_role()
+
+        if role == "admin":
+            return redirect(url_for('admin.admin_dashboard'))
+        elif role == "company":
+            return redirect(url_for('company.company_dashboard'))
+        else:
+            return redirect(url_for('student.student_dashboard'))
+
     return redirect(url_for('auth.login'))
 
 auth = Blueprint('auth', __name__)
@@ -236,8 +247,9 @@ def view_applications():
 def search_students():
     query = request.args.get('q')
     students = Student.query.filter(
-        Student.name.contains(query) |
-        Student.email.contains(query)
+        (Student.name.contains(query)) |
+        (Student.email.contains(query)) |
+        (Student.id == query if query.isdigit() else False)
     ).all()
 
     return render_template('admin/students.html', students=students)
@@ -270,6 +282,13 @@ def blacklist_company(id):
     company.approval_status = 'Blacklisted'
     db.session.commit()
     return redirect(url_for('admin.view_companies'))
+
+@admin.route('/admin/placements')
+@login_required
+@role_required('admin')
+def view_placements():
+    placements = Placement.query.all()
+    return render_template('admin/placements.html', placements=placements)
 
 @admin.route('/admin/chart-data')
 @login_required
@@ -314,15 +333,40 @@ def create_drive():
             job_description=request.form['description'],
             eligibility=request.form['eligibility'],
             application_deadline=datetime.strptime(request.form['deadline'], "%Y-%m-%d"),
-            company_id=current_user.id
+            company_id=current_user.id,
+            status='Pending'
         )
 
         db.session.add(drive)
         db.session.commit()
 
-        return redirect(url_for('company.dashboard'))
+        return redirect(url_for('company.company_dashboard'))
 
     return render_template('company/create_drive.html')
+
+
+@company.route('/company/drive/<int:id>/edit', methods=['GET', 'POST'])
+@login_required
+@role_required('company')
+def edit_drive(id):
+
+    drive = PlacementDrive.query.get_or_404(id)
+
+    # Ownership check
+    if drive.company_id != current_user.id:
+        return "Unauthorized"
+
+    if request.method == 'POST':
+        drive.job_title = request.form['title']
+        drive.job_description = request.form['description']
+        drive.eligibility = request.form['eligibility']
+        drive.application_deadline = datetime.strptime(request.form['deadline'], "%Y-%m-%d")
+
+        db.session.commit()
+
+        return redirect(url_for('company.dashboard'))
+
+    return render_template('company/edit_drive.html', drive=drive)
 
 
 @company.route('/company/drive/<int:id>/close')
@@ -395,6 +439,14 @@ def update_application_status(id, status):
         return "Invalid transition"
 
     application.status = status
+
+    if status == "Placed":
+        placement = Placement(
+            student_id=application.student_id,
+            drive_id=application.drive_id
+        )
+        db.session.add(placement)
+
     db.session.commit()
 
     return redirect(url_for('company.view_applications', id=application.drive_id))
@@ -419,6 +471,20 @@ def company_chart_data():
         "values": values
     }
 
+@company.route('/company/drive/<int:id>/delete')
+@login_required
+@role_required('company')
+def delete_drive(id):
+    drive = PlacementDrive.query.get_or_404(id)
+
+    if drive.company_id != current_user.id:
+        return "Unauthorized"
+
+    db.session.delete(drive)
+    db.session.commit()
+
+    return redirect(url_for('company.dashboard'))
+
 student = Blueprint('student', __name__)
 
 @student.route('/student/dashboard')
@@ -430,10 +496,13 @@ def student_dashboard():
 
     applications = Application.query.filter_by(student_id=current_user.id).all()
 
+    placements = Placement.query.filter_by(student_id=current_user.id).all()
+
     return render_template(
         'student/dashboard.html',
         drives=drives,
-        applications=applications
+        applications=applications,
+        placements=placements
     )
 
 
@@ -483,6 +552,7 @@ def profile():
     if request.method == 'POST':
         current_user.name = request.form['name']
         current_user.skills = request.form['skills']
+        current_user.resume = request.form['resume']
 
         db.session.commit()
         return redirect(url_for('student.dashboard'))

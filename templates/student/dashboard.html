@@ -3,6 +3,8 @@
 
 <h2>Student Dashboard</h2>
 
+<a href="/student/profile">Edit Profile</a>
+
 <h3>Available Jobs</h3>
 <table>
 <tr><th>Title</th><th>Action</th></tr>
@@ -29,6 +31,22 @@
 
 <h3>Application Status</h3>
 <canvas id="studentChart"></canvas>
+
+<h3>Placement History</h3>
+
+<table>
+<tr>
+    <th>Company</th>
+    <th>Job</th>
+</tr>
+
+{% for p in placements %}
+<tr>
+    <td>{{ p.drive.company.name }}</td>
+    <td>{{ p.drive.job_title }}</td>
+</tr>
+{% endfor %}
+</table>
 
 <script>
 fetch('/student/chart-data')

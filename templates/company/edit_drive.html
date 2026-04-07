@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Edit Placement Drive</h2>
+
+<form method="POST">
+
+    <label>Job Title:</label><br>
+    <input type="text" name="title" value="{{ drive.job_title }}" required><br><br>
+
+    <label>Description:</label><br>
+    <textarea name="description">{{ drive.job_description }}</textarea><br><br>
+
+    <label>Eligibility:</label><br>
+    <textarea name="eligibility">{{ drive.eligibility }}</textarea><br><br>
+
+    <label>Deadline:</label><br>
+    <input type="date" name="deadline" 
+           value="{{ drive.application_deadline.strftime('%Y-%m-%d') }}"><br><br>
+
+    <button type="submit">Update Drive</button>
+
+</form>
+
+{% endblock %}
