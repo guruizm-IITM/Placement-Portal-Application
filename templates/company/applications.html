@@ -15,8 +15,12 @@
     <td>{{ app.student.name }}</td>
     <td>{{ app.status }}</td>
     <td>
+        <a href="/company/student/{{ app.student.id }}">View Profile</a>
         <a href="/company/application/{{ app.id }}/update/Shortlisted">Shortlist</a>
         <a href="/company/application/{{ app.id }}/update/Rejected">Reject</a>
+        <a href="/company/application/{{ app.id }}/update/Interview">Interview</a>
+        <a href="/company/application/{{ app.id }}/update/Selected">Selected</a>
+        <a href="/company/application/{{ app.id }}/update/Placed">Placed</a>
     </td>
 </tr>
 {% endfor %}

@@ -7,11 +7,18 @@
 
 <h3>Available Jobs</h3>
 <table>
-<tr><th>Title</th><th>Action</th></tr>
+<tr>
+    <th>Company</th>
+    <th>Job Title</th>
+    <th>Description</th>
+    <th>Action</th>
+</tr>
 
 {% for drive in drives %}
 <tr>
+    <td>{{ drive.company.name }}</td>
     <td>{{ drive.job_title }}</td>
+    <td>{{ drive.job_description }}</td>
     <td><a href="/student/apply/{{ drive.id }}">Apply</a></td>
 </tr>
 {% endfor %}
@@ -19,12 +26,32 @@
 
 <h3>Your Applications</h3>
 <table>
-<tr><th>Job</th><th>Status</th></tr>
+<tr>
+    <th>Company</th>
+    <th>Job</th>
+    <th>Status</th>
+</tr>
 
 {% for app in applications %}
 <tr>
+    <td>{{ app.drive.company.name }}</td>
     <td>{{ app.drive.job_title }}</td>
-    <td>{{ app.status }}</td>
+
+    <td>
+        <span style="opacity: {{ '1' if app.status == 'Applied' else '0.3' }}; color: gray;">Applied</span> →
+
+        <span style="opacity: {{ '1' if app.status == 'Shortlisted' else '0.3' }}; color: blue;">Shortlisted</span> →
+
+        <span style="opacity: {{ '1' if app.status == 'Interview' else '0.3' }}; color: purple;">Interview</span> →
+
+        <span style="opacity: {{ '1' if app.status == 'Selected' else '0.3' }}; color: orange;">Selected</span> →
+
+        <span style="opacity: {{ '1' if app.status == 'Placed' else '0.3' }}; color: green;">Placed</span>
+
+        {% if app.status == 'Rejected' %}
+            → <span style="color: darkred; font-weight: bold;">Rejected</span>
+        {% endif %}
+    </td>
 </tr>
 {% endfor %}
 </table>
@@ -57,7 +84,15 @@ fetch('/student/chart-data')
         data: {
             labels: data.labels,
             datasets: [{
-                data: data.values
+                data: data.values,
+                backgroundColor: [
+                    "gray",     // Applied
+                    "blue",     // Shortlisted
+                    "purple",   // Interview
+                    "orange",   // Selected
+                    "green",    // Placed
+                    "red"       // Rejected
+                ]
             }]
         }
     });

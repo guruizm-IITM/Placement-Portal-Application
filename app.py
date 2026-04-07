@@ -111,6 +111,15 @@ def login():
             if isinstance(user, Company) and user.approval_status != 'Approved':
                 flash("Company not approved yet")
                 return redirect(url_for('auth.login'))
+            # Student blacklist check
+            if isinstance(user, Student) and user.is_blacklisted:
+                flash("Access denied. Please contact admin.")
+                return redirect(url_for('auth.login'))
+
+            # Company blacklist check
+            if isinstance(user, Company) and user.approval_status == "Blacklisted":
+                flash("Access denied. Please contact admin.")
+                return redirect(url_for('auth.login'))
 
             login_user(user)
 
@@ -364,7 +373,7 @@ def edit_drive(id):
 
         db.session.commit()
 
-        return redirect(url_for('company.dashboard'))
+        return redirect(url_for('company.company_dashboard'))
 
     return render_template('company/edit_drive.html', drive=drive)
 
@@ -400,6 +409,13 @@ def view_applications(id):
         applications=applications,
         drive=drive
     )
+
+@company.route('/company/student/<int:id>')
+@login_required
+@role_required('company')
+def view_student_profile(id):
+    student = Student.query.get_or_404(id)
+    return render_template('company/student_profile.html', student=student)
 
 
 VALID_STATUSES = {
@@ -541,7 +557,7 @@ def apply_job(drive_id):
         db.session.rollback()
         return "Already applied"
 
-    return redirect(url_for('student.dashboard'))
+    return redirect(url_for('student.student_dashboard'))
 
 
 @student.route('/student/profile', methods=['GET', 'POST'])
@@ -555,7 +571,7 @@ def profile():
         current_user.resume = request.form['resume']
 
         db.session.commit()
-        return redirect(url_for('student.dashboard'))
+        return redirect(url_for('student.student_dashboard'))
 
     return render_template('student/profile.html')
 
@@ -566,10 +582,12 @@ def student_chart_data():
 
     applications = Application.query.filter_by(student_id=current_user.id).all()
 
-    status_count = {}
+    all_statuses = ["Applied", "Shortlisted", "Interview", "Selected", "Placed", "Rejected"]
+
+    status_count = {status: 0 for status in all_statuses}
 
     for app in applications:
-        status_count[app.status] = status_count.get(app.status, 0) + 1
+        status_count[app.status] += 1
 
     return {
         "labels": list(status_count.keys()),
