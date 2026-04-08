@@ -1,6 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
 
+<style>
+.chart-container {
+    width: 400px;
+    height: 400px;
+    margin: 20px 0;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+</style>
+
 <h2>Student Dashboard</h2>
 
 <a href="/student/profile">Edit Profile</a>
@@ -23,6 +35,9 @@
 </tr>
 {% endfor %}
 </table>
+
+<br>
+<br>
 
 <h3>Your Applications</h3>
 <table>
@@ -56,8 +71,14 @@
 {% endfor %}
 </table>
 
+<br>
+<br>
+
 <h3>Application Status</h3>
+
+<div class="chart-container">
 <canvas id="studentChart"></canvas>
+</div>
 
 <h3>Placement History</h3>
 

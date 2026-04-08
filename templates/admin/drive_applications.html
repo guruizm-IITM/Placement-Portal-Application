@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Applications for {{ drive.job_title }}</h2>
+
+<table>
+<tr>
+    <th>Student</th>
+    <th>Email</th>
+    <th>Status</th>
+</tr>
+
+{% for app in applications %}
+<tr>
+    <td>{{ app.student.name }}</td>
+    <td>{{ app.student.email }}</td>
+    <td>{{ app.status }}</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}

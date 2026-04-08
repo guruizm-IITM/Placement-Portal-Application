@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>Edit Company Profile</h2>
+
+<form method="POST">
+
+    <label>Company Name:</label><br>
+    <input type="text" name="name" value="{{ current_user.name }}" required><br><br>
+
+    <label>Email:</label><br>
+    <input type="email" name="email" value="{{ current_user.email }}" required><br><br>
+
+    <label>HR Contact:</label><br>
+    <input type="text" name="hr_contact" value="{{ current_user.hr_contact }}"><br><br>
+
+    <label>Website:</label><br>
+    <input type="text" name="website" value="{{ current_user.website }}"><br><br>
+
+    <button type="submit">Update Profile</button>
+
+</form>
+
+{% endblock %}

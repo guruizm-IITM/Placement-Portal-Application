@@ -1,11 +1,12 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Placements</h2>
+<h2>All Placements</h2>
 
 <table>
 <tr>
     <th>Student</th>
+    <th>Email</th>
     <th>Company</th>
     <th>Job</th>
 </tr>
@@ -13,11 +14,11 @@
 {% for p in placements %}
 <tr>
     <td>{{ p.student.name }}</td>
+    <td>{{ p.student.email }}</td>
     <td>{{ p.drive.company.name }}</td>
     <td>{{ p.drive.job_title }}</td>
 </tr>
 {% endfor %}
-
 </table>
 
 {% endblock %}

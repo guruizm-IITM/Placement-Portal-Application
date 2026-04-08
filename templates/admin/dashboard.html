@@ -1,6 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
 
+<style>
+.chart-container {
+    width: 600px;
+    height: 300px;
+    margin: 20px 0;
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+</style>
+
 <h2>Admin Dashboard</h2>
 
 <ul>
@@ -23,13 +35,22 @@
     <input type="text" name="q" placeholder="Search by company name" required>
     <button type="submit">Search</button>
 </form>
+<br>
+<br>
 
-<a href="/admin/companies">Manage Companies</a>
-<a href="/admin/students">Manage Students</a>
-<a href="/admin/drives">Manage Drives</a>
+<a href="/admin/companies">Manage Companies ||</a>
+<a href="/admin/students">Manage Students ||</a>
+<a href="/admin/drives">Manage Drives ||</a>
+<a href="/admin/placements">View Placements</a>
+
+<br>
+<br>
 
 <h3>System Overview</h3>
+
+<div class="chart-container">
 <canvas id="adminChart"></canvas>
+</div>
 
 <script>
 fetch('/admin/chart-data')

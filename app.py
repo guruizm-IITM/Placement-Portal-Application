@@ -250,6 +250,20 @@ def view_applications():
     applications = Application.query.all()
     return render_template('admin/applications.html', applications=applications)
 
+@admin.route('/admin/drive/<int:id>/applications')
+@login_required
+@role_required('admin')
+def admin_view_drive_applications(id):
+
+    drive = PlacementDrive.query.get_or_404(id)
+    applications = Application.query.filter_by(drive_id=id).all()
+
+    return render_template(
+        'admin/drive_applications.html',
+        drive=drive,
+        applications=applications
+    )
+
 @admin.route('/admin/search/students')
 @login_required
 @role_required('admin')
@@ -304,8 +318,13 @@ def blacklist_company(id):
 @login_required
 @role_required('admin')
 def view_placements():
+
     placements = Placement.query.all()
-    return render_template('admin/placements.html', placements=placements)
+
+    return render_template(
+        'admin/placements.html',
+        placements=placements
+    )
 
 @admin.route('/admin/chart-data')
 @login_required
@@ -508,6 +527,28 @@ def delete_drive(id):
     db.session.commit()
 
     return redirect(url_for('company.dashboard'))
+
+@company.route('/company/profile', methods=['GET', 'POST'])
+@login_required
+@role_required('company')
+def company_profile():
+
+    if request.method == 'POST':
+        current_user.name = request.form['name']
+        current_user.email = request.form['email']
+        current_user.hr_contact = request.form['hr_contact']
+        current_user.website = request.form['website']
+
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            return "Email already exists"
+
+        flash("Profile updated successfully")
+        return redirect(url_for('company.dashboard'))
+
+    return render_template('company/profile.html')
 
 student = Blueprint('student', __name__)
 
