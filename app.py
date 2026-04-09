@@ -20,8 +20,7 @@ login_manager.login_view = "auth.login"
 def load_user(user_id):
 
     if '-' not in user_id:
-        return None   # prevents crash
-
+        return None   
     role, id = user_id.split('-')
     id = int(id)
 
@@ -98,42 +97,51 @@ def login():
     if request.method == 'POST':
         email_or_username = request.form['email']
         password = request.form['password']
-
+        
         user = (
             Admin.query.filter_by(username=email_or_username).first() or
             Student.query.filter_by(email=email_or_username).first() or
             Company.query.filter_by(email=email_or_username).first()
         )
 
-        if user and check_password_hash(user.password, password):
+        if not user:
+            flash("Invalid credentials")
+            return redirect(url_for('auth.login'))
 
-            #Company approval check
-            if isinstance(user, Company) and user.approval_status != 'Approved':
+        # AUTHORIZATION CHECKS
+
+        # Student blacklist
+        if isinstance(user, Student) and user.is_blacklisted:
+            flash("Access denied. Please contact admin.")
+            return redirect(url_for('auth.login'))
+
+        # Company checks
+        if isinstance(user, Company):
+
+            if user.approval_status == "Blacklisted":
+                flash("Access denied. Please contact admin.")
+                return redirect(url_for('auth.login'))
+
+            if user.approval_status != "Approved":
                 flash("Company not approved yet")
                 return redirect(url_for('auth.login'))
-            # Student blacklist check
-            if isinstance(user, Student) and user.is_blacklisted:
-                flash("Access denied. Please contact admin.")
-                return redirect(url_for('auth.login'))
 
-            # Company blacklist check
-            if isinstance(user, Company) and user.approval_status == "Blacklisted":
-                flash("Access denied. Please contact admin.")
-                return redirect(url_for('auth.login'))
+        # PASSWORD CHECK
+        if not check_password_hash(user.password, password):
+            flash("Invalid credentials")
+            return redirect(url_for('auth.login'))
 
-            login_user(user)
+        # LOGIN SUCCESS
+        login_user(user)
 
-            #Role-based redirect
-            role = user.get_role()
+        role = user.get_role()
 
-            if role == "admin":
-                return redirect(url_for('admin.admin_dashboard'))
-            elif role == "company":
-                return redirect(url_for('company.company_dashboard'))
-            else:
-                return redirect(url_for('student.student_dashboard'))
-
-        flash("Invalid credentials")
+        if role == "admin":
+            return redirect(url_for('admin.admin_dashboard'))
+        elif role == "company":
+            return redirect(url_for('company.company_dashboard'))
+        else:
+            return redirect(url_for('student.student_dashboard'))
 
     return render_template('auth/login.html')
 
