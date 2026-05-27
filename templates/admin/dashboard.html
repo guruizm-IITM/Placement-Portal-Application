@@ -1,55 +1,113 @@
 {% extends "base.html" %}
 {% block content %}
 
-<style>
-.chart-container {
-    width: 600px;
-    height: 300px;
-    margin: 20px 0;
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
-}
-</style>
+<div class="container py-4">
 
-<h2>Admin Dashboard</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="bi bi-speedometer2 me-2"></i>Admin Dashboard</h2>
+        <span class="badge bg-primary fs-6">Administrator</span>
+    </div>
 
-<ul>
-    <li>Total Students: {{ students }}</li>
-    <li>Total Companies: {{ companies }}</li>
-    <li>Total Drives: {{ drives }}</li>
-    <li>Total Applications: {{ applications }}</li>
-</ul>
+    <!-- Stat Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small">Total Students</div>
+                        <div class="fs-3 fw-bold text-primary">{{ students }}</div>
+                    </div>
+                    <i class="bi bi-people-fill fs-1 text-primary opacity-25"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card p-3" style="border-left-color: #10b981;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small">Total Companies</div>
+                        <div class="fs-3 fw-bold" style="color:#10b981;">{{ companies }}</div>
+                    </div>
+                    <i class="bi bi-building fs-1 opacity-25" style="color:#10b981;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card p-3" style="border-left-color: #8b5cf6;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small">Total Drives</div>
+                        <div class="fs-3 fw-bold" style="color:#8b5cf6;">{{ drives }}</div>
+                    </div>
+                    <i class="bi bi-briefcase-fill fs-1 opacity-25" style="color:#8b5cf6;"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card p-3" style="border-left-color: #f59e0b;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="text-muted small">Total Applications</div>
+                        <div class="fs-3 fw-bold" style="color:#f59e0b;">{{ applications }}</div>
+                    </div>
+                    <i class="bi bi-file-earmark-text-fill fs-1 opacity-25" style="color:#f59e0b;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<h3>Search Students</h3>
+    <!-- Search -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h6 class="fw-semibold mb-2"><i class="bi bi-search me-2"></i>Search Students</h6>
+                <form method="GET" action="/admin/search/students" class="d-flex gap-2">
+                    <input type="text" name="q" class="form-control" placeholder="Search by name, email or ID" required>
+                    <button type="submit" class="btn btn-primary px-3">Go</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h6 class="fw-semibold mb-2"><i class="bi bi-search me-2"></i>Search Companies</h6>
+                <form method="GET" action="/admin/search/companies" class="d-flex gap-2">
+                    <input type="text" name="q" class="form-control" placeholder="Search by company name" required>
+                    <button type="submit" class="btn btn-primary px-3">Go</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
-<form method="GET" action="/admin/search/students">
-    <input type="text" name="q" placeholder="Search by name, email or ID" required>
-    <button type="submit">Search</button>
-</form>
+    <!-- Quick Links -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <a href="/admin/companies" class="btn btn-outline-primary w-100 py-2">
+                <i class="bi bi-building me-2"></i>Manage Companies
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="/admin/students" class="btn btn-outline-primary w-100 py-2">
+                <i class="bi bi-people me-2"></i>Manage Students
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="/admin/drives" class="btn btn-outline-primary w-100 py-2">
+                <i class="bi bi-briefcase me-2"></i>Manage Drives
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="/admin/placements" class="btn btn-outline-success w-100 py-2">
+                <i class="bi bi-trophy me-2"></i>View Placements
+            </a>
+        </div>
+    </div>
 
-<h3>Search Companies</h3>
+    <!-- Chart -->
+    <div class="card p-4">
+        <h5 class="fw-semibold mb-3"><i class="bi bi-bar-chart-fill me-2"></i>System Overview</h5>
+        <canvas id="adminChart" style="max-height: 300px;"></canvas>
+    </div>
 
-<form method="GET" action="/admin/search/companies">
-    <input type="text" name="q" placeholder="Search by company name" required>
-    <button type="submit">Search</button>
-</form>
-<br>
-<br>
-
-<a href="/admin/companies">Manage Companies ||</a>
-<a href="/admin/students">Manage Students ||</a>
-<a href="/admin/drives">Manage Drives ||</a>
-<a href="/admin/placements">View Placements</a>
-
-<br>
-<br>
-
-<h3>System Overview</h3>
-
-<div class="chart-container">
-<canvas id="adminChart"></canvas>
 </div>
 
 <script>
@@ -61,10 +119,13 @@ fetch('/admin/chart-data')
         data: {
             labels: data.labels,
             datasets: [{
-                label: 'Admin Stats',
-                data: data.values
+                label: 'Count',
+                data: data.values,
+                backgroundColor: ['#3b82f6','#10b981','#8b5cf6','#f59e0b'],
+                borderRadius: 6
             }]
-        }
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
     });
 });
 </script>

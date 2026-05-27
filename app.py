@@ -56,6 +56,8 @@ def register_student():
         student = Student(
             name=request.form['name'],
             email=request.form['email'],
+            mobile=request.form['mobile'],
+            father=request.form["father's name"],
             password=generate_password_hash(request.form['password'])
         )
         try:

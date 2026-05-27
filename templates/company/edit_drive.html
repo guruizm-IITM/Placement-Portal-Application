@@ -1,25 +1,43 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Edit Placement Drive</h2>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="bi bi-pencil-square me-2"></i>Edit Placement Drive</h2>
+        <a href="/company/dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
 
-<form method="POST">
-
-    <label>Job Title:</label><br>
-    <input type="text" name="title" value="{{ drive.job_title }}" required><br><br>
-
-    <label>Description:</label><br>
-    <textarea name="description">{{ drive.job_description }}</textarea><br><br>
-
-    <label>Eligibility:</label><br>
-    <textarea name="eligibility">{{ drive.eligibility }}</textarea><br><br>
-
-    <label>Deadline:</label><br>
-    <input type="date" name="deadline" 
-           value="{{ drive.application_deadline.strftime('%Y-%m-%d') }}"><br><br>
-
-    <button type="submit">Update Drive</button>
-
-</form>
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card p-4">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Job Title</label>
+                        <input type="text" name="title" class="form-control"
+                               value="{{ drive.job_title }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Job Description</label>
+                        <textarea name="description" class="form-control" rows="4">{{ drive.job_description }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Eligibility Criteria</label>
+                        <textarea name="eligibility" class="form-control" rows="3">{{ drive.eligibility }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Application Deadline</label>
+                        <input type="date" name="deadline" class="form-control"
+                               value="{{ drive.application_deadline.strftime('%Y-%m-%d') }}">
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                        <i class="bi bi-save me-2"></i>Update Drive
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

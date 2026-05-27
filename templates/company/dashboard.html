@@ -1,65 +1,85 @@
 {% extends "base.html" %}
 {% block content %}
 
-<style>
-.chart-container {
-    width: 600px;
-    height: 300px;
-    margin: 20px 0;
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
-}
-</style>
+<div class="container py-4">
 
-<h2>Company Dashboard</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0"><i class="bi bi-building me-2"></i>Company Dashboard</h2>
+            <p class="text-muted mb-0">{{ current_user.name }} &bull; {{ current_user.email }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/company/profile" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-pencil-square me-1"></i>Edit Profile
+            </a>
+            <a href="/company/drive/create" class="btn btn-primary btn-sm">
+                <i class="bi bi-plus-circle me-1"></i>Create Drive
+            </a>
+        </div>
+    </div>
 
-<h3>Company Info</h3>
-<p>Name: {{ current_user.name }}</p>
-<p>Email: {{ current_user.email }}</p>
+    <!-- Drives Table -->
+    <div class="card mb-4">
+        <div class="card-header py-3">
+            <i class="bi bi-briefcase-fill me-2"></i>Your Placement Drives
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Job Title</th>
+                            <th>Status</th>
+                            <th>Applications</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for drive in drives %}
+                        <tr>
+                            <td><strong>{{ drive.job_title }}</strong></td>
+                            <td>
+                                {% if drive.status == 'Approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif drive.status == 'Pending' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif drive.status == 'Rejected' %}
+                                    <span class="badge bg-secondary">Rejected</span>
+                                {% elif drive.status == 'Closed' %}
+                                    <span class="badge bg-dark">Closed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="/company/drive/{{ drive.id }}/applications"
+                                   class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-people me-1"></i>View ({{ drive.applications|length }})
+                                </a>
+                            </td>
+                            <td class="d-flex gap-1">
+                                <a href="/company/drive/{{ drive.id }}/edit"
+                                   class="btn btn-warning btn-sm text-white">
+                                    <i class="bi bi-pencil me-1"></i>Edit
+                                </a>
+                                <a href="/company/drive/{{ drive.id }}/delete"
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Delete this drive?')">
+                                    <i class="bi bi-trash me-1"></i>Delete
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-<br>
-<br>
+    <!-- Chart -->
+    <div class="card p-4">
+        <h5 class="fw-semibold mb-3"><i class="bi bi-bar-chart-fill me-2"></i>Applications per Drive</h5>
+        <canvas id="companyChart" style="max-height: 300px;"></canvas>
+    </div>
 
-<a href="/company/profile">Edit Profile</a>
-<a href="/company/drive/create">Create Drive</a>
-
-<br>
-<br>
-
-<table>
-<tr>
-    <th>Job</th>
-    <th>Status</th>
-    <th>Applications</th>
-    <th>Actions</th>
-</tr>
-
-{% for drive in drives %}
-<tr>
-    <td>{{ drive.job_title }}</td>
-    <td>{{ drive.status }}</td>
-    <td>
-        <a href="/company/drive/{{ drive.id }}/applications">
-            View ({{ drive.applications|length }})
-        </a>
-    </td>
-    <td>
-        <a href="/company/drive/{{ drive.id }}/edit">Edit</a>
-        <a href="/company/drive/{{ drive.id }}/delete">Delete</a>
-    </td>
-</tr>
-{% endfor %}
-</table>
-
-<br>
-<br>
-
-<h3>Applications per Job</h3>
-
-<div class="chart-container">
-<canvas id="companyChart"></canvas>
 </div>
 
 <script>
@@ -72,9 +92,12 @@ fetch('/company/chart-data')
             labels: data.labels,
             datasets: [{
                 label: 'Applications',
-                data: data.values
+                data: data.values,
+                backgroundColor: '#3b82f6',
+                borderRadius: 6
             }]
-        }
+        },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
     });
 });
 </script>

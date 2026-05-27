@@ -1,20 +1,44 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Create Placement Drive</h2>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="bi bi-plus-circle-fill me-2"></i>Create Placement Drive</h2>
+        <a href="/company/dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
 
-<form method="POST">
-
-    <input type="text" name="title" placeholder="Job Title" required><br><br>
-
-    <textarea name="description" placeholder="Job Description"></textarea><br><br>
-
-    <textarea name="eligibility" placeholder="Eligibility Criteria"></textarea><br><br>
-
-    <input type="date" name="deadline" required><br><br>
-
-    <button type="submit">Create Drive</button>
-
-</form>
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card p-4">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Job Title</label>
+                        <input type="text" name="title" class="form-control"
+                               placeholder="e.g. Software Engineer" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Job Description</label>
+                        <textarea name="description" class="form-control" rows="4"
+                                  placeholder="Describe the role and responsibilities"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Eligibility Criteria</label>
+                        <textarea name="eligibility" class="form-control" rows="3"
+                                  placeholder="e.g. CGPA above 7.5, CSE/ECE branches"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Application Deadline</label>
+                        <input type="date" name="deadline" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                        <i class="bi bi-send me-2"></i>Create Drive
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

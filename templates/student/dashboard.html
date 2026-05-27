@@ -1,100 +1,131 @@
 {% extends "base.html" %}
 {% block content %}
 
-<style>
-.chart-container {
-    width: 400px;
-    height: 400px;
-    margin: 20px 0;
-    background: white;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.1);
-}
-</style>
+<div class="container py-4">
 
-<h2>Student Dashboard</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0"><i class="bi bi-person-circle me-2"></i>Student Dashboard</h2>
+            <p class="text-muted mb-0">Welcome back, <strong>{{ current_user.name }}</strong></p>
+        </div>
+        <a href="/student/profile" class="btn btn-outline-primary btn-sm">
+            <i class="bi bi-pencil-square me-1"></i>Edit Profile
+        </a>
+    </div>
 
-<a href="/student/profile">Edit Profile</a>
+    <!-- Available Jobs -->
+    <div class="card mb-4">
+        <div class="card-header py-3">
+            <i class="bi bi-briefcase-fill me-2"></i>Available Placement Drives
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Job Title</th>
+                            <th>Description</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for drive in drives %}
+                        <tr>
+                            <td><i class="bi bi-building me-1 text-muted"></i>{{ drive.company.name }}</td>
+                            <td><strong>{{ drive.job_title }}</strong></td>
+                            <td class="text-muted small">{{ drive.job_description }}</td>
+                            <td>
+                                <a href="/student/apply/{{ drive.id }}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-send me-1"></i>Apply
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-<h3>Available Jobs</h3>
-<table>
-<tr>
-    <th>Company</th>
-    <th>Job Title</th>
-    <th>Description</th>
-    <th>Action</th>
-</tr>
+    <!-- My Applications -->
+    <div class="card mb-4">
+        <div class="card-header py-3">
+            <i class="bi bi-file-earmark-text-fill me-2"></i>Your Applications
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Job</th>
+                            <th>Progress</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td>{{ app.drive.company.name }}</td>
+                            <td>{{ app.drive.job_title }}</td>
+                            <td>
+                                <span class="badge bg-secondary me-1" style="opacity: {{ '1' if app.status == 'Applied' else '0.3' }}">Applied</span>
+                                <i class="bi bi-arrow-right text-muted small"></i>
+                                <span class="badge bg-primary mx-1" style="opacity: {{ '1' if app.status == 'Shortlisted' else '0.3' }}">Shortlisted</span>
+                                <i class="bi bi-arrow-right text-muted small"></i>
+                                <span class="badge mx-1" style="background:#8b5cf6; opacity: {{ '1' if app.status == 'Interview' else '0.3' }}">Interview</span>
+                                <i class="bi bi-arrow-right text-muted small"></i>
+                                <span class="badge bg-warning text-dark mx-1" style="opacity: {{ '1' if app.status == 'Selected' else '0.3' }}">Selected</span>
+                                <i class="bi bi-arrow-right text-muted small"></i>
+                                <span class="badge bg-success mx-1" style="opacity: {{ '1' if app.status == 'Placed' else '0.3' }}">Placed</span>
+                                {% if app.status == 'Rejected' %}
+                                    <span class="badge bg-danger ms-1">Rejected</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-{% for drive in drives %}
-<tr>
-    <td>{{ drive.company.name }}</td>
-    <td>{{ drive.job_title }}</td>
-    <td>{{ drive.job_description }}</td>
-    <td><a href="/student/apply/{{ drive.id }}">Apply</a></td>
-</tr>
-{% endfor %}
-</table>
+    <!-- Chart and Placement History -->
+    <div class="row g-3">
+        <div class="col-md-5">
+            <div class="card p-3 h-100">
+                <h6 class="fw-semibold mb-3"><i class="bi bi-pie-chart-fill me-2"></i>Application Status</h6>
+                <canvas id="studentChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-7">
+            <div class="card h-100">
+                <div class="card-header py-3">
+                    <i class="bi bi-trophy-fill me-2"></i>Placement History
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Company</th>
+                                <th>Job Title</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in placements %}
+                            <tr>
+                                <td>{{ p.drive.company.name }}</td>
+                                <td><span class="badge bg-success">{{ p.drive.job_title }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<br>
-<br>
-
-<h3>Your Applications</h3>
-<table>
-<tr>
-    <th>Company</th>
-    <th>Job</th>
-    <th>Status</th>
-</tr>
-
-{% for app in applications %}
-<tr>
-    <td>{{ app.drive.company.name }}</td>
-    <td>{{ app.drive.job_title }}</td>
-
-    <td>
-        <span style="opacity: {{ '1' if app.status == 'Applied' else '0.3' }}; color: gray;">Applied</span> →
-
-        <span style="opacity: {{ '1' if app.status == 'Shortlisted' else '0.3' }}; color: blue;">Shortlisted</span> →
-
-        <span style="opacity: {{ '1' if app.status == 'Interview' else '0.3' }}; color: purple;">Interview</span> →
-
-        <span style="opacity: {{ '1' if app.status == 'Selected' else '0.3' }}; color: orange;">Selected</span> →
-
-        <span style="opacity: {{ '1' if app.status == 'Placed' else '0.3' }}; color: green;">Placed</span>
-
-        {% if app.status == 'Rejected' %}
-            → <span style="color: darkred; font-weight: bold;">Rejected</span>
-        {% endif %}
-    </td>
-</tr>
-{% endfor %}
-</table>
-
-<br>
-<br>
-
-<h3>Application Status</h3>
-
-<div class="chart-container">
-<canvas id="studentChart"></canvas>
 </div>
-
-<h3>Placement History</h3>
-
-<table>
-<tr>
-    <th>Company</th>
-    <th>Job</th>
-</tr>
-
-{% for p in placements %}
-<tr>
-    <td>{{ p.drive.company.name }}</td>
-    <td>{{ p.drive.job_title }}</td>
-</tr>
-{% endfor %}
-</table>
 
 <script>
 fetch('/student/chart-data')
@@ -106,16 +137,11 @@ fetch('/student/chart-data')
             labels: data.labels,
             datasets: [{
                 data: data.values,
-                backgroundColor: [
-                    "gray",     // Applied
-                    "blue",     // Shortlisted
-                    "purple",   // Interview
-                    "orange",   // Selected
-                    "green",    // Placed
-                    "red"       // Rejected
-                ]
+                backgroundColor: ['#6b7280','#3b82f6','#8b5cf6','#f59e0b','#10b981','#ef4444'],
+                borderWidth: 2
             }]
-        }
+        },
+        options: { plugins: { legend: { position: 'bottom' } } }
     });
 });
 </script>

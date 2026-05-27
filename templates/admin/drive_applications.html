@@ -1,22 +1,57 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2>Applications for {{ drive.job_title }}</h2>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="bi bi-file-earmark-person me-2"></i>Applications for {{ drive.job_title }}</h2>
+        <a href="/admin/drives" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Drives
+        </a>
+    </div>
 
-<table>
-<tr>
-    <th>Student</th>
-    <th>Email</th>
-    <th>Status</th>
-</tr>
-
-{% for app in applications %}
-<tr>
-    <td>{{ app.student.name }}</td>
-    <td>{{ app.student.email }}</td>
-    <td>{{ app.status }}</td>
-</tr>
-{% endfor %}
-</table>
+    <div class="card">
+        <div class="card-header py-3">
+            <i class="bi bi-table me-2"></i>Applicant List
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in applications %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ app.student.name }}</td>
+                            <td>{{ app.student.email }}</td>
+                            <td>
+                                {% if app.status == 'Applied' %}
+                                    <span class="badge badge-applied bg-secondary">Applied</span>
+                                {% elif app.status == 'Shortlisted' %}
+                                    <span class="badge bg-primary">Shortlisted</span>
+                                {% elif app.status == 'Interview' %}
+                                    <span class="badge bg-purple" style="background:#8b5cf6;">Interview</span>
+                                {% elif app.status == 'Selected' %}
+                                    <span class="badge bg-warning text-dark">Selected</span>
+                                {% elif app.status == 'Placed' %}
+                                    <span class="badge bg-success">Placed</span>
+                                {% elif app.status == 'Rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

@@ -33,6 +33,8 @@ class Student(UserMixin, db.Model):
     name = db.Column(db.String(150), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
+    mobile = db.Column(db.String(15), nullable=True)
+    father = db.Column(db.String(150), nullable=False)
 
     resume = db.Column(db.String(200))
     skills = db.Column(db.Text)
